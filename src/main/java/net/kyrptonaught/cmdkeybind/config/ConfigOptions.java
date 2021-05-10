@@ -10,11 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigOptions implements AbstractConfigFile {
-
-    public boolean enabled = true;
-
     public List<ConfigMacro> macros = new ArrayList<>();
-
     public static class ConfigMacro {
         @Comment("Macro keybinding")
         public String keyName;

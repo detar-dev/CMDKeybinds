@@ -33,7 +33,7 @@ public abstract class BaseMacro {
     }
 
     private boolean findDupesWModPress(long hndl) {
-        for (BaseMacro macro : CmdKeybindMod.macros)
+        for (BaseMacro macro : CmdKeybindMod.activeMacros)
             if (macro.isDupeKeyModPressed(hndl, primaryKey))
                 return true;
         return false;
@@ -41,9 +41,9 @@ public abstract class BaseMacro {
 
     protected boolean isTriggered(long hndl) {
         if (isKeyTriggered(hndl, primaryKey)) {
-            if (modifierKey.getCode() != -1)
+            if (modifierKey.getCode() != -1) {
                 return isKeyTriggered(hndl, modifierKey);
-            else {
+            } else {
                 return !findDupesWModPress(hndl);
             }
         }
@@ -55,8 +55,10 @@ public abstract class BaseMacro {
     }
 
     private static boolean isKeyTriggered(long hndl, InputUtil.Key key) {
-        if (key.getCategory() == InputUtil.Type.MOUSE)
-            return GLFW.glfwGetMouseButton(hndl, key.getCode()) == 1;
-        else return GLFW.glfwGetKey(hndl, key.getCode()) == 1;
+        if (key.getCategory() == InputUtil.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(hndl, key.getCode()) == GLFW.GLFW_PRESS;
+        } else {
+            return GLFW.glfwGetKey(hndl, key.getCode()) == GLFW.GLFW_PRESS;
+        }
     }
 }

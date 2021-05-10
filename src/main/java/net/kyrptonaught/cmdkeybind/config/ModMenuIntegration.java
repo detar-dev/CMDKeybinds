@@ -17,7 +17,11 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 
+import java.util.List;
 import java.util.function.Function;
+
+import static net.kyrptonaught.cmdkeybind.CmdKeybindMod.currentProfile;
+import static net.kyrptonaught.cmdkeybind.CmdKeybindMod.configManagerDetar;
 
 @Environment(EnvType.CLIENT)
 public class ModMenuIntegration implements ModMenuApi {
@@ -33,19 +37,29 @@ public class ModMenuIntegration implements ModMenuApi {
     }
 
     private static Screen buildScreen(Screen screen) {
-        ConfigOptions options = CmdKeybindMod.getConfig();
-        ConfigBuilder builder = ConfigBuilder.create().setParentScreen(screen).setTitle(new TranslatableText("Macros"));
+        ConfigOptions options = configManagerDetar.config.profiles.get(currentProfile);
+
+        ConfigBuilder builder = ConfigBuilder.create().setParentScreen(screen)
+                .setTitle(new TranslatableText(String.format("Current Profile: %s", currentProfile)));
 
         builder.setSavingRunnable(() -> {
-            CmdKeybindMod.config.save();
+            System.out.println("calling setSavingRunnable");
+            configManagerDetar.save();
             CmdKeybindMod.buildMacros();
         });
+
         ConfigCategory category = builder.getOrCreateCategory(new TranslatableText("key.cmdkeybind.config.category.main"));
+
         ConfigEntryBuilder entryBuilder = ConfigEntryBuilder.create();
-        category.addEntry(entryBuilder.startBooleanToggle(new TranslatableText("key.cmdkeybind.config.enabled"), options.enabled).setDefaultValue(true).setSaveConsumer(val -> options.enabled = val).build());
+
+        category.addEntry(entryBuilder.startBooleanToggle(new TranslatableText("key.cmdkeybind.config.enabled"), configManagerDetar.config.enable).setDefaultValue(true).setSaveConsumer(val -> configManagerDetar.config.enable= val).build());
+
 
         for (int i = 0; i < options.macros.size(); i++)
-            category.addEntry(buildNewMacro(builder, entryBuilder, i).build());
+        {
+            category.addEntry(buildNewMacro(builder, entryBuilder, options.macros, i).build());
+        }
+
         category.addEntry(new ButtonEntry(new TranslatableText("key.cmdkeybind.config.add"), buttonEntry -> {
             CmdKeybindMod.addEmptyMacro();
             reloadScreen(builder);
@@ -53,8 +67,9 @@ public class ModMenuIntegration implements ModMenuApi {
         return builder.build();
     }
 
-    private static SubCategoryBuilder buildNewMacro(ConfigBuilder builder, ConfigEntryBuilder entryBuilder, int macroNum) {
-        ConfigOptions.ConfigMacro macro = CmdKeybindMod.getConfig().macros.get(macroNum);
+
+    private static SubCategoryBuilder buildNewMacro(ConfigBuilder builder, ConfigEntryBuilder entryBuilder, List<ConfigOptions.ConfigMacro> macros, int macroNum) {
+        ConfigOptions.ConfigMacro macro = macros.get(macroNum);
         SubCategoryBuilder sub = entryBuilder.startSubCategory(new LiteralText(macro.command)).setTooltip(new LiteralText(macro.keyName));
         sub.add(entryBuilder.startTextField(new TranslatableText("key.cmdkeybind.config.macro.command"), macro.command).setDefaultValue("/").setSaveConsumer(cmd -> macro.command = cmd).build());
         sub.add(entryBuilder.startKeyCodeField(new TranslatableText("key.cmdkeybind.config.macro.key"), InputUtil.fromTranslationKey(macro.keyName)).setSaveConsumer(key -> macro.keyName = key.getTranslationKey()).build());
@@ -62,7 +77,7 @@ public class ModMenuIntegration implements ModMenuApi {
         sub.add(entryBuilder.startEnumSelector(new TranslatableText("key.cmdkeybind.config.macrotype"), BaseMacro.MacroType.class, macro.macroType).setSaveConsumer(val -> macro.macroType = val).build());
         sub.add(entryBuilder.startIntField(new TranslatableText("key.cmdkeybind.config.delay"), macro.delay).setDefaultValue(0).setSaveConsumer(val -> macro.delay = val).build());
         sub.add(new ButtonEntry(new TranslatableText("key.cmdkeybind.config.remove"), buttonEntry -> {
-            CmdKeybindMod.getConfig().macros.remove(macroNum);
+            macros.remove(macroNum);
             reloadScreen(builder);
         }));
         return sub;

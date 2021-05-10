@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "id": "cmdkeybind",
-  "version": "1.5.2-1.16",
+  "version": "1.16.5",
   "name": "Command Macros",
-  "description": "Command Macros!",
+  "description": "Command Macros! + features from detar\nCommands:\n /cmd add <profile> - add profile\n /cmd remove <profile> - remove profile\n /cmd change <profile> - change current profile to new profile\n /cmd list - list all available profiles\n /cmd set_default <profile> - sets default profile",
   "authors": [
-    "kyrptonaught"
+    "kyrptonaught, Detar"
   ],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/command-macros",
-    "sources": "https://github.com/kyrptonaught/CMDKeybinds"
+    "sources": "https://github.com/detar-dev/CMDKeybinds"
   },
   "license": "MIT",
   "icon": "assets/cmdkeybind/icon.png",
