@@ -176,7 +176,7 @@ public class CmdKeybindMod implements ClientModInitializer {
     {
         if (configManagerDetar.config.profiles.containsKey(profile_name))
         {
-            if (profile_name.equals("default"))
+            if (profile_name.equals(configManagerDetar.config.defaultProfile))
             {
                 player.sendSystemMessage(
                         new LiteralText("Cannot delete default profile").formatted(Formatting.RED),
