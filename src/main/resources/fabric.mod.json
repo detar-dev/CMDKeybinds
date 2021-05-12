@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "cmdkeybind",
   "version": "1.16.5",
-  "name": "Command Macros",
+  "name": "Command Macros with Profiles",
   "description": "Command Macros! + features from detar\nCommands:\n /cmd add <profile> - add profile\n /cmd remove <profile> - remove profile\n /cmd change <profile> - change current profile to new profile\n /cmd list - list all available profiles\n /cmd set_default <profile> - sets default profile",
   "authors": [
     "kyrptonaught, Detar"

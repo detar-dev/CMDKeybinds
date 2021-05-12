@@ -1,12 +1,15 @@
 package net.kyrptonaught.cmdkeybind;
 
 import com.mojang.brigadier.Command; import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.kyrptonaught.cmdkeybind.MacroTypes.*;
 import net.kyrptonaught.cmdkeybind.config.ConfigManagerDetar;
 import net.kyrptonaught.cmdkeybind.config.ConfigOptions;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -43,55 +46,54 @@ public class CmdKeybindMod implements ClientModInitializer {
         // cmd add <profile>
         // cmd remove <profile>
         // cmd set_default <profile>
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            dispatcher.register(CommandManager.literal("cmd")
-                    .then(CommandManager.literal("add")
-                        .then(CommandManager.argument("profile", StringArgumentType.word())
-                                .executes(ctx ->
-                                        addProfile(ctx.getSource().getPlayer(),
-                                                   StringArgumentType.getString(ctx, "profile")))
+        ClientCommandManager.DISPATCHER.register(
+            ClientCommandManager.literal("cmd")
+                        .then(ClientCommandManager.literal("add")
+                            .then(ClientCommandManager.argument("profile", StringArgumentType.word())
+                                    .executes(ctx ->
+                                            addProfile(ctx.getSource().getPlayer(),
+                                                    StringArgumentType.getString(ctx, "profile")))
+                            )
                         )
-                    )
-                    .then(CommandManager.literal("remove")
-                            .then(CommandManager.argument("profile", StringArgumentType.word())
-                                    .executes(ctx ->
-                                            removeProfile(ctx.getSource().getPlayer(),
-                                                    StringArgumentType.getString(ctx, "profile")))
-                            )
-                    )
-                    .then(CommandManager.literal("change")
-                            .then(CommandManager.argument("profile", StringArgumentType.word())
-                                    .executes(ctx ->
-                                            changeProfile(ctx.getSource().getPlayer(),
-                                                    StringArgumentType.getString(ctx, "profile")))
-                            )
-                    )
-                    .then(CommandManager.literal("set_default")
-                            .then(CommandManager.argument("profile", StringArgumentType.word())
-                                    .executes(ctx ->
-                                            setDefaultProfile(ctx.getSource().getPlayer(),
-                                                    StringArgumentType.getString(ctx, "profile")))
-                            )
-                    )
-                    .then(CommandManager.literal("list")
-                            .executes(context -> {
-                                ServerPlayerEntity player = context.getSource().getPlayer();
-                                player.sendSystemMessage(new LiteralText("All profiles: ").formatted(Formatting.GRAY), player.getUuid());
-                                for (String s : userProfiles)
-                                {
-                                    if (s.equals(currentProfile))
+                        .then(ClientCommandManager.literal("remove")
+                                .then(ClientCommandManager.argument("profile", StringArgumentType.word())
+                                        .executes(ctx ->
+                                                removeProfile(ctx.getSource().getPlayer(),
+                                                        StringArgumentType.getString(ctx, "profile")))
+                                )
+                        )
+                        .then(ClientCommandManager.literal("change")
+                                .then(ClientCommandManager.argument("profile", StringArgumentType.word())
+                                        .executes(ctx ->
+                                                changeProfile(ctx.getSource().getPlayer(),
+                                                        StringArgumentType.getString(ctx, "profile")))
+                                )
+                        )
+                        .then(ClientCommandManager.literal("set_default")
+                                .then(ClientCommandManager.argument("profile", StringArgumentType.word())
+                                        .executes(ctx ->
+                                                setDefaultProfile(ctx.getSource().getPlayer(),
+                                                        StringArgumentType.getString(ctx, "profile")))
+                                )
+                        )
+                        .then(ClientCommandManager.literal("list")
+                                .executes(context -> {
+                                    ClientPlayerEntity player = context.getSource().getPlayer();
+                                    player.sendSystemMessage(new LiteralText("All profiles: ").formatted(Formatting.GRAY), player.getUuid());
+                                    for (String s : userProfiles)
                                     {
-                                        continue;
+                                        if (s.equals(currentProfile))
+                                        {
+                                            continue;
+                                        }
+                                        player.sendSystemMessage(new LiteralText(String.format(" * %s", s)).formatted(Formatting.GRAY), player.getUuid());
                                     }
-                                    player.sendSystemMessage(new LiteralText(String.format(" * %s", s)).formatted(Formatting.GRAY), player.getUuid());
-                                }
-                                player.sendSystemMessage(new LiteralText(String.format(" * %s", currentProfile)).formatted(Formatting.GREEN), player.getUuid());
+                                    player.sendSystemMessage(new LiteralText(String.format(" * %s", currentProfile)).formatted(Formatting.GREEN), player.getUuid());
 
-                                return Command.SINGLE_SUCCESS;
-                            })
-                    )
-            );
-        });
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+        );
 
         // every tick check if a macro has been pressed
         ClientTickEvents.START_WORLD_TICK.register(clientWorld ->
@@ -146,7 +148,7 @@ public class CmdKeybindMod implements ClientModInitializer {
         configManagerDetar.save();
     }
 
-    public static int addProfile(ServerPlayerEntity player, String profile_name)
+    public static int addProfile(ClientPlayerEntity player, String profile_name)
     {
         if (!configManagerDetar.config.profiles.containsKey(profile_name))
         {
@@ -172,7 +174,7 @@ public class CmdKeybindMod implements ClientModInitializer {
         }
     }
 
-    public static int removeProfile(ServerPlayerEntity player, String profile_name)
+    public static int removeProfile(ClientPlayerEntity player, String profile_name)
     {
         if (configManagerDetar.config.profiles.containsKey(profile_name))
         {
@@ -214,7 +216,7 @@ public class CmdKeybindMod implements ClientModInitializer {
         }
     }
 
-    private int changeProfile(ServerPlayerEntity player, String profile_name)
+    private int changeProfile(ClientPlayerEntity player, String profile_name)
     {
         if (configManagerDetar.config.profiles.containsKey(profile_name))
         {
@@ -236,7 +238,7 @@ public class CmdKeybindMod implements ClientModInitializer {
         }
     }
 
-    private int setDefaultProfile(ServerPlayerEntity player, String profile_name)
+    private int setDefaultProfile(ClientPlayerEntity player, String profile_name)
     {
         if (configManagerDetar.config.profiles.containsKey(profile_name))
         {
